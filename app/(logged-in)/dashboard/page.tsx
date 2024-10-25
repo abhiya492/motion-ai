@@ -27,7 +27,7 @@ export default async function Dashboard() {
   let userId = null;
   let priceId = null;
 
-  const hasUserCancelled = await hasCancelledSubscription(sql, email);
+  await hasCancelledSubscription(sql, email);
   const user = await doesUserExist(sql, email);
 
   if (user) {

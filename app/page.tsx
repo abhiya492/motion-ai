@@ -1,6 +1,3 @@
-//import { Button } from "@/components/ui/button";
-//import Image from "next/image";
-
 import Banner from "@/components/home/banner";
 import { Dot } from "lucide-react";
 import HowItWorks from "@/components/home/howitworks";

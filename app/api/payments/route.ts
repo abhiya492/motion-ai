@@ -1,11 +1,16 @@
+import {
+  handleCheckoutSessionCompleted,
+  handleSubscriptionDeleted,
+} from "@/lib/payment-helpers";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST(req: NextRequest) {
-  // Webhook functionality
+  //webhook functionality
   const payload = await req.text();
+
   const sig = req.headers.get("stripe-signature");
 
   let event;
@@ -27,20 +32,18 @@ export async function POST(req: NextRequest) {
           }
         );
         console.log({ session });
-        // Connect to the database to create or update user
-        // (You may want to add your own logic here if needed)
+
+        //connect to the db create or update user
+        await handleCheckoutSessionCompleted({ session, stripe });
         break;
-      };
+      }
       case "customer.subscription.deleted": {
-        const subscription = await stripe.subscriptions.retrieve(event.data.object.id);
+        // connect to db
+        const subscriptionId = event.data.object.id;
 
-        console.log({ subscription });
-        // Connect to the database to delete user subscription
-        // (You may want to add your own logic here if needed)
+        await handleSubscriptionDeleted({ subscriptionId, stripe });
         break;
-      };
-
-
+      }
       default:
         console.log(`Unhandled event type ${event.type}`);
     }
@@ -50,5 +53,4 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     return NextResponse.json({ status: "Failed", err });
   }
-  return NextResponse.json({ status: "success" });
 }

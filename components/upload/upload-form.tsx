@@ -10,6 +10,12 @@ import {
   transcribeUploadedFile,
 } from "@/actions/upload-actions";
 
+// Define the UploadResponse type
+type UploadResponse = {
+  fileUrl: string;
+  fileKey: string;
+}[];
+
 const schema = z.object({
   file: z
     .instanceof(File, { message: "Invalid file" })
@@ -26,7 +32,6 @@ const schema = z.object({
 
 export default function UploadForm() {
   const { toast } = useToast();
-
   const { startUpload } = useUploadThing("videoOrAudioUploader", {
     onClientUploadComplete: () => {
       toast({ title: "uploaded successfully!" });
@@ -41,7 +46,6 @@ export default function UploadForm() {
 
   const handleTranscribe = async (formData: FormData) => {
     const file = formData.get("file") as File;
-
     const validatedFields = schema.safeParse({ file });
 
     if (!validatedFields.success) {
@@ -56,19 +60,22 @@ export default function UploadForm() {
           validatedFields.error.flatten().fieldErrors.file?.[0] ??
           "Invalid file",
       });
+      return; // Early return on validation failure
     }
 
     if (file) {
-      const resp: any = await startUpload([file]);
+      const resp = await startUpload([file]) as UploadResponse;
       console.log({ resp });
-
-      if (!resp) {
+      
+      if (!resp || resp.length === 0) {
         toast({
           title: "Something went wrong",
           description: "Please use a different file",
           variant: "destructive",
         });
+        return;
       }
+
       toast({
         title: "🎙️ Transcription is in progress...",
         description:
@@ -84,6 +91,7 @@ export default function UploadForm() {
           description:
             "An error occurred during transcription. Please try again.",
         });
+        return;
       }
 
       if (data) {
@@ -105,6 +113,7 @@ export default function UploadForm() {
       }
     }
   };
+
   return (
     <form className="flex flex-col gap-6" action={handleTranscribe}>
       <div className="flex justify-end items-center gap-1.5">
