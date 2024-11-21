@@ -64,7 +64,7 @@ export default function UploadForm() {
     }
 
     if (file) {
-      const resp = await startUpload([file]) as UploadResponse;
+      const resp = await startUpload([file]) as unknown as UploadResponse;
       console.log({ resp });
       
       if (!resp || resp.length === 0) {
@@ -82,7 +82,17 @@ export default function UploadForm() {
           "Hang tight! Our digital wizards are sprinkling magic dust on your file! ✨",
       });
 
-      const result = await transcribeUploadedFile(resp);
+      const transformedResp = resp.map((file) => ({
+        serverData: {
+          userId: "someUserId", // Replace with actual userId if available
+          file: {
+            url: file.fileUrl,
+            name: file.fileKey,
+          },
+        },
+      }));
+
+      const result = await transcribeUploadedFile(transformedResp);
       const { data = null, message = null } = result || {};
 
       if (!result || (!data && !message)) {
