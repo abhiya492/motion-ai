@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^5.7.5",
+    "@mdxeditor/editor": "^3.19.2",
     "@neondatabase/serverless": "^0.10.1",
     "@radix-ui/react-icons": "^1.3.0",
     "@radix-ui/react-slot": "^1.1.0",

@@ -14,7 +14,6 @@ import { redirect } from "next/navigation";
 
 export default async function Dashboard() {
   const clerkUser = await currentUser();
-
   if (!clerkUser) {
     return redirect("/sign-in");
   }
@@ -51,7 +50,7 @@ export default async function Dashboard() {
 
   const isValidBasicPlan = isBasicPlan && posts.length < 3;
 
-  console.log({ isBasicPlan, isProPlan, isValidBasicPlan, posts: posts.length });
+ // console.log({ isBasicPlan, isProPlan, isValidBasicPlan, posts: posts.length });
 
 
 
