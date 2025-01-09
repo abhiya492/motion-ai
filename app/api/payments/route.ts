@@ -4,6 +4,7 @@ import {
 } from "@/lib/payment-helpers";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
+import { redirect } from "next/navigation";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -35,6 +36,11 @@ export async function POST(req: NextRequest) {
 
         //connect to the db create or update user
         await handleCheckoutSessionCompleted({ session, stripe });
+
+        // Redirect to the main page upon successful completion of the 30 days demo selection
+        if (session.mode === "subscription" && session.subscription) {
+          return NextResponse.redirect("/");
+        }
         break;
       }
       case "customer.subscription.deleted": {
