@@ -25,17 +25,6 @@ export default async function getDbConnection() {
     // Test the connection
     await sql`SELECT 1`;
     
-    // Add the daily_credits column to the users table if it doesn't exist
-    await sql`
-      DO $$
-      BEGIN
-        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='daily_credits') THEN
-          ALTER TABLE users ADD COLUMN daily_credits INTEGER DEFAULT 10;
-        END IF;
-      END
-      $$;
-    `;
-    
     return sql;
   } catch (error) {
     if (error instanceof DatabaseConnectionError) {
@@ -45,14 +34,5 @@ export default async function getDbConnection() {
     throw new DatabaseConnectionError(
       `Failed to connect to database: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
-  }
-}
-
-export async function resetDailyCredits(sql) {
-  try {
-    await sql`UPDATE users SET daily_credits = 10`;
-  } catch (error) {
-    console.error("Error resetting daily credits", error);
-    throw error;
   }
 }

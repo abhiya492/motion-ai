@@ -8,8 +8,6 @@ import {
   getPlanType,
   hasCancelledSubscription,
   updateUser,
-  getUserDailyCredits,
-  resetDailyCreditsAtMidnight,
 } from "@/lib/user-helpers";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
@@ -46,12 +44,6 @@ export default async function Dashboard() {
   const posts = await sql`SELECT * FROM posts WHERE user_id = ${userId}`;
   const isValidBasicPlan = isBasicPlan && posts.length < 3;
 
-  // Fetch daily credits from the database
-  const dailyCredits = userId ? await getUserDailyCredits(sql, userId) : 0;
-
-  // Call resetDailyCreditsAtMidnight function
-  resetDailyCreditsAtMidnight(sql);
-
   return (
     <BgGradient>
       <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8">
@@ -79,22 +71,10 @@ export default async function Dashboard() {
             </p>
           )}
 
-          <p className="mt-2 text-lg leading-8 text-gray-600 max-w-2xl text-center">
-            You have{" "}
-            <span className="font-bold text-amber-600 bg-amber-100 px-2 py-1 rounded-md">
-              {dailyCredits}
-            </span>{" "}
-            daily credits remaining.
-          </p>
-
-          {dailyCredits > 0 ? (
-            (isValidBasicPlan || isProPlan) ? (
-              <BgGradient>
-                <UploadForm />
-              </BgGradient>
-            ) : (
-              <UpgradeYourPlan />
-            )
+          {isValidBasicPlan || isProPlan ? (
+            <BgGradient>
+              <UploadForm />
+            </BgGradient>
           ) : (
             <UpgradeYourPlan />
           )}

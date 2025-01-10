@@ -10,8 +10,6 @@ import {
   transcribeUploadedFile,
 } from "@/actions/upload-actions";
 import { currentUser } from "@clerk/nextjs/server";
-import { getUserDailyCredits } from "@/lib/user-helpers";
-import getDbConnection from "@/lib/db";
 // Define the UploadResponse type
 type UploadResponse = {
   fileUrl: string;
@@ -76,17 +74,6 @@ export default function UploadForm() {
     }
 
     const userId = user.id;
-    const sql = await getDbConnection();
-    const remainingCredits = await getUserDailyCredits(sql, userId);
-
-    if (remainingCredits <= 0) {
-      toast({
-        title: "Daily credit limit reached",
-        description: "You have exhausted your daily credits. Please upgrade your plan.",
-        variant: "destructive",
-      });
-      return;
-    }
 
     if (file) {
       const resp = await startUpload([file]) as unknown as UploadResponse;
@@ -145,15 +132,6 @@ export default function UploadForm() {
           description:
             "Time to put on your editor hat, Click the post and edit it!",
         });
-
-        // Decrement daily credits
-        await fetch(`/api/decrement-credits?userId=${userId}`, {
-          method: "POST",
-        });
-
-        // Update localStorage with the new credit count
-        const newRemainingCredits = remainingCredits - 1;
-        localStorage.setItem("dailyCredits", newRemainingCredits.toString());
       }
     }
   };
