@@ -9,12 +9,6 @@ import {
   generateBlogPostAction,
   transcribeUploadedFile,
 } from "@/actions/upload-actions";
-import { currentUser } from "@clerk/nextjs/server";
-// Define the UploadResponse type
-type UploadResponse = {
-  fileUrl: string;
-  fileKey: string;
-}[];
 
 const schema = z.object({
   file: z
@@ -32,17 +26,13 @@ const schema = z.object({
 
 export default function UploadForm() {
   const { toast } = useToast();
+
   const { startUpload } = useUploadThing("videoOrAudioUploader", {
     onClientUploadComplete: () => {
       toast({ title: "uploaded successfully!" });
     },
     onUploadError: (err) => {
       console.error("Error occurred", err);
-      toast({
-        title: "Upload Error",
-        description: "An error occurred during the upload. Please try again.",
-        variant: "destructive",
-      });
     },
     onUploadBegin: () => {
       toast({ title: "Upload has begun 🚀!" });
@@ -51,6 +41,7 @@ export default function UploadForm() {
 
   const handleTranscribe = async (formData: FormData) => {
     const file = formData.get("file") as File;
+
     const validatedFields = schema.safeParse({ file });
 
     if (!validatedFields.success) {
@@ -65,75 +56,27 @@ export default function UploadForm() {
           validatedFields.error.flatten().fieldErrors.file?.[0] ??
           "Invalid file",
       });
-      return; // Early return on validation failure
     }
-
-    const user = await currentUser();
-    if (!user) {
-      toast({
-        title: "User not authenticated",
-        description: "Please sign in to continue.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const userId = user.id;
 
     if (file) {
-      let resp: UploadResponse;
-      try {
-        resp = (await startUpload([file])) as unknown as UploadResponse;
-      } catch (error) {
-        console.error("Error during file upload", error);
-        toast({
-          title: "File Upload Error",
-          description: "An error occurred during file upload. Please try again.",
-          variant: "destructive",
-        });
-        return;
-      }
-
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const resp: any = await startUpload([file]);
       console.log({ resp });
 
-      if (!resp || resp.length === 0) {
+      if (!resp) {
         toast({
           title: "Something went wrong",
           description: "Please use a different file",
           variant: "destructive",
         });
-        return;
       }
-
       toast({
         title: "🎙️ Transcription is in progress...",
         description:
           "Hang tight! Our digital wizards are sprinkling magic dust on your file! ✨",
       });
 
-      const transformedResp = resp.map((file) => ({
-        serverData: {
-          userId: userId,
-          file: {
-            url: file.fileUrl,
-            name: file.fileKey,
-          },
-        },
-      }));
-
-      let result;
-      try {
-        result = await transcribeUploadedFile(transformedResp);
-      } catch (error) {
-        console.error("Error during transcription", error);
-        toast({
-          title: "Transcription Error",
-          description: "An error occurred during transcription. Please try again.",
-          variant: "destructive",
-        });
-        return;
-      }
-
+      const result = await transcribeUploadedFile(resp);
       const { data = null, message = null } = result || {};
 
       if (!result || (!data && !message)) {
@@ -142,7 +85,6 @@ export default function UploadForm() {
           description:
             "An error occurred during transcription. Please try again.",
         });
-        return;
       }
 
       if (data) {
@@ -151,20 +93,10 @@ export default function UploadForm() {
           description: "Please wait while we generate your blog post.",
         });
 
-        try {
-          await generateBlogPostAction({
-            transcriptions: data.transcriptions,
-            userId: data.userId,
-          });
-        } catch (error) {
-          console.error("Error during blog post generation", error);
-          toast({
-            title: "Blog Post Generation Error",
-            description: "An error occurred during blog post generation. Please try again.",
-            variant: "destructive",
-          });
-          return;
-        }
+        await generateBlogPostAction({
+          transcriptions: data.transcriptions,
+          userId: data.userId,
+        });
 
         toast({
           title: "🎉 Woohoo! Your AI blog is created! 🎊",
@@ -174,7 +106,6 @@ export default function UploadForm() {
       }
     }
   };
-
   return (
     <form className="flex flex-col gap-6" action={handleTranscribe}>
       <div className="flex justify-end items-center gap-1.5">
