@@ -6,24 +6,31 @@ const f = createUploadthing();
 
 export const ourFileRouter = {
   videoOrAudioUploader: f({ video: { maxFileSize: "32MB" } })
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     .middleware(async ({ req }) => {
-      const user = await currentUser();
+      try {
+        const user = await currentUser();
 
-      console.log({ user });
+        console.log({ user });
 
-      if (!user) throw new UploadThingError("Unauthorized");
+        if (!user) throw new UploadThingError("Unauthorized");
 
-      return { userId: user.id };
+        return { userId: user.id };
+      } catch (error) {
+        console.error("Error in videoOrAudioUploader middleware", error);
+        throw new UploadThingError("Internal Server Error");
+      }
     })
     .onUploadComplete(async ({ metadata, file }) => {
-      // This code RUNS ON YOUR SERVER after upload
-      console.log("Upload complete for userId:", metadata.userId);
+      try {
+        console.log("Upload complete for userId:", metadata.userId);
 
-      console.log("file url", file.url);
+        console.log("file url", file.url);
 
-      // !!! Whatever is returned here is sent to the clientside `onClientUploadComplete` callback
-      return { userId: metadata.userId, file };
+        return { userId: metadata.userId, file };
+      } catch (error) {
+        console.error("Error in onUploadComplete", error);
+        throw new UploadThingError("Internal Server Error");
+      }
     }),
 } satisfies FileRouter;
 

@@ -25,7 +25,7 @@ export async function updatePostAction(data: {
 
     await sql`UPDATE posts SET content = ${content}, title = ${updatedTitle} where id = ${postId}`;
   } catch (error) {
-    console.error("Error occurred in updating the post", postId);
+    console.error("Error occurred in updating the post", postId, error);
     return {
       success: false,
     };

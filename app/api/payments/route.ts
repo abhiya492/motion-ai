@@ -57,6 +57,7 @@ export async function POST(req: NextRequest) {
       status: "success",
     });
   } catch (err) {
+    console.error("Error handling Stripe webhook event", err);
     return NextResponse.json({ status: "Failed", err });
   }
 }
