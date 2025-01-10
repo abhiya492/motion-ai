@@ -63,6 +63,20 @@ export default function UploadForm() {
       return; // Early return on validation failure
     }
 
+    // Check and decrement daily credits
+    const userId = "someUserId"; // Replace with actual userId if available
+    const response = await fetch(`/api/credits?userId=${userId}`);
+    const { remainingCredits } = await response.json();
+
+    if (remainingCredits <= 0) {
+      toast({
+        title: "Daily credit limit reached",
+        description: "You have exhausted your daily credits. Please upgrade your plan.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (file) {
       const resp = await startUpload([file]) as unknown as UploadResponse;
       console.log({ resp });
@@ -119,6 +133,11 @@ export default function UploadForm() {
           title: "🎉 Woohoo! Your AI blog is created! 🎊",
           description:
             "Time to put on your editor hat, Click the post and edit it!",
+        });
+
+        // Decrement daily credits
+        await fetch(`/api/decrement-credits?userId=${userId}`, {
+          method: "POST",
         });
       }
     }

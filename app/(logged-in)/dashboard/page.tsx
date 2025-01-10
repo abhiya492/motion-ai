@@ -50,10 +50,9 @@ export default async function Dashboard() {
 
   const isValidBasicPlan = isBasicPlan && posts.length < 3;
 
- // console.log({ isBasicPlan, isProPlan, isValidBasicPlan, posts: posts.length });
-
-
-
+  // Fetch daily credits from the database
+  const dailyCredits = await sql`SELECT daily_credits FROM users WHERE id = ${userId}`;
+  const remainingCredits = dailyCredits[0]?.daily_credits ?? 10;
 
   return (
     <BgGradient>
@@ -82,10 +81,22 @@ export default async function Dashboard() {
             </p>
           )}
 
+          <p className="mt-2 text-lg leading-8 text-gray-600 max-w-2xl text-center">
+            You have{" "}
+            <span className="font-bold text-amber-600 bg-amber-100 px-2 py-1 rounded-md">
+              {remainingCredits}
+            </span>{" "}
+            daily credits remaining.
+          </p>
+
           {isValidBasicPlan || isProPlan ? (
-            <BgGradient>
-              <UploadForm />
-            </BgGradient>
+            remainingCredits > 0 ? (
+              <BgGradient>
+                <UploadForm />
+              </BgGradient>
+            ) : (
+              <UpgradeYourPlan />
+            )
           ) : (
             <UpgradeYourPlan />
           )}
