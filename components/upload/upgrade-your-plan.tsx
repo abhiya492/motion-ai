@@ -8,6 +8,9 @@ export default function UpgradeYourPlan() {
         You need to upgrade to the Basic Plan or the Pro Plan to create blog
         posts with the power of AI 💖.
       </p>
+      <p className="mt-2 text-lg leading-8 text-gray-600 max-w-2xl text-center border-2 border-red-200 bg-red-100 p-4 rounded-lg border-dashed">
+        You have exhausted your 10 daily credits. Please upgrade your plan to continue uploading.
+      </p>
       <Link
         href="/#pricing"
         className="flex gap-2 items-center text-purple-600 font-semibold"
