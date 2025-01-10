@@ -12,29 +12,8 @@ export default async function Page() {
     return redirect("/sign-in");
   }
 
-  let sql;
-  try {
-    sql = await getDbConnection();
-  } catch (error) {
-    console.error("Error connecting to the database", error);
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <p className="text-red-500 text-lg">Internal Server Error. Please try again later.</p>
-      </div>
-    );
-  }
-
-  let posts;
-  try {
-    posts = await sql`SELECT * from posts where user_id = ${user.id}`;
-  } catch (error) {
-    console.error("Error fetching posts", error);
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <p className="text-red-500 text-lg">Internal Server Error. Please try again later.</p>
-      </div>
-    );
-  }
+  const sql = await getDbConnection();
+  const posts = await sql`SELECT * from posts where user_id = ${user.id}`;
 
   return (
     <main className="mx-auto w-full max-w-screen-xl px-2.5 lg:px-0 mb-12 mt-28">
