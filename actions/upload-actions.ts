@@ -171,7 +171,15 @@ export async function generateBlogPostAction({
     //database connection
 
     if (blogPost) {
-      postId = await saveBlogPost(userId, title, blogPost);
+      try {
+        postId = await saveBlogPost(userId, title, blogPost);
+      } catch (error) {
+        console.error("Error saving blog post", error);
+        return {
+          success: false,
+          message: "Error saving blog post",
+        };
+      }
     }
   }
 

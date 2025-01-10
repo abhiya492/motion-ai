@@ -38,6 +38,11 @@ export default function UploadForm() {
     },
     onUploadError: (err) => {
       console.error("Error occurred", err);
+      toast({
+        title: "Upload Error",
+        description: "An error occurred during the upload. Please try again.",
+        variant: "destructive",
+      });
     },
     onUploadBegin: () => {
       toast({ title: "Upload has begun 🚀!" });
@@ -76,9 +81,21 @@ export default function UploadForm() {
     const userId = user.id;
 
     if (file) {
-      const resp = await startUpload([file]) as unknown as UploadResponse;
+      let resp: UploadResponse;
+      try {
+        resp = (await startUpload([file])) as unknown as UploadResponse;
+      } catch (error) {
+        console.error("Error during file upload", error);
+        toast({
+          title: "File Upload Error",
+          description: "An error occurred during file upload. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       console.log({ resp });
-      
+
       if (!resp || resp.length === 0) {
         toast({
           title: "Something went wrong",
@@ -104,7 +121,19 @@ export default function UploadForm() {
         },
       }));
 
-      const result = await transcribeUploadedFile(transformedResp);
+      let result;
+      try {
+        result = await transcribeUploadedFile(transformedResp);
+      } catch (error) {
+        console.error("Error during transcription", error);
+        toast({
+          title: "Transcription Error",
+          description: "An error occurred during transcription. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { data = null, message = null } = result || {};
 
       if (!result || (!data && !message)) {
@@ -122,10 +151,20 @@ export default function UploadForm() {
           description: "Please wait while we generate your blog post.",
         });
 
-        await generateBlogPostAction({
-          transcriptions: data.transcriptions,
-          userId: data.userId,
-        });
+        try {
+          await generateBlogPostAction({
+            transcriptions: data.transcriptions,
+            userId: data.userId,
+          });
+        } catch (error) {
+          console.error("Error during blog post generation", error);
+          toast({
+            title: "Blog Post Generation Error",
+            description: "An error occurred during blog post generation. Please try again.",
+            variant: "destructive",
+          });
+          return;
+        }
 
         toast({
           title: "🎉 Woohoo! Your AI blog is created! 🎊",

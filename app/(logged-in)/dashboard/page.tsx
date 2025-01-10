@@ -11,10 +11,24 @@ import {
 } from "@/lib/user-helpers";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
 
 export default async function Dashboard() {
-  const clerkUser = await currentUser();
-  if (!clerkUser) {
+  const { toast } = useToast();
+  let clerkUser;
+
+  try {
+    clerkUser = await currentUser();
+    if (!clerkUser) {
+      throw new Error("User authentication failed");
+    }
+  } catch (error) {
+    console.error("Error during user authentication", error);
+    toast({
+      title: "Authentication Error",
+      description: "Failed to authenticate user. Please sign in again.",
+      variant: "destructive",
+    });
     return redirect("/sign-in");
   }
 
