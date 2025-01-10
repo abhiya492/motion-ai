@@ -1,36 +1,23 @@
 import React, { useEffect, useState } from "react";
+import { getUserDailyCredits } from "@/lib/user-helpers";
+import { currentUser } from "@clerk/nextjs/server";
+import getDbConnection from "@/lib/db";
 
 const CreditManagement = () => {
   const [credits, setCredits] = useState(10);
-  const [lastRefreshDate, setLastRefreshDate] = useState(
-    localStorage.getItem("lastRefreshDate") || new Date().toISOString()
-  );
 
   useEffect(() => {
-    const now = new Date();
-    const lastRefresh = new Date(lastRefreshDate);
-
-    if (now.getDate() !== lastRefresh.getDate()) {
-      setCredits(10);
-      setLastRefreshDate(now.toISOString());
-      localStorage.setItem("credits", "10");
-      localStorage.setItem("lastRefreshDate", now.toISOString());
-    } else {
-      const storedCredits = localStorage.getItem("credits");
-      if (storedCredits) {
-        setCredits(parseInt(storedCredits, 10));
+    const fetchCredits = async () => {
+      const user = await currentUser();
+      if (user) {
+        const sql = await getDbConnection();
+        const dailyCredits = await getUserDailyCredits(sql, user.id);
+        setCredits(dailyCredits);
       }
-    }
-  }, [lastRefreshDate]);
+    };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const decrementCredits = () => {
-    if (credits > 0) {
-      const newCredits = credits - 1;
-      setCredits(newCredits);
-      localStorage.setItem("credits", newCredits.toString());
-    }
-  };
+    fetchCredits();
+  }, []);
 
   return (
     <div className="credit-management">
