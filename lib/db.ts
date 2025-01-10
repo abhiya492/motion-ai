@@ -25,6 +25,17 @@ export default async function getDbConnection() {
     // Test the connection
     await sql`SELECT 1`;
     
+    // Add the daily_credits column to the users table if it doesn't exist
+    await sql`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='daily_credits') THEN
+          ALTER TABLE users ADD COLUMN daily_credits INTEGER DEFAULT 10;
+        END IF;
+      END
+      $$;
+    `;
+    
     return sql;
   } catch (error) {
     if (error instanceof DatabaseConnectionError) {
