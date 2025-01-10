@@ -43,7 +43,6 @@ export async function getUserDailyCredits(
 ) {
   const query = await sql`SELECT daily_credits FROM users WHERE id = ${userId}`;
   const dailyCredits = query[0]?.daily_credits ?? 10;
-  localStorage.setItem("dailyCredits", dailyCredits.toString());
   return dailyCredits;
 }
 
@@ -63,7 +62,6 @@ export async function resetDailyCreditsAtMidnight(
 
   setTimeout(async () => {
     await sql`UPDATE users SET daily_credits = 10`;
-    localStorage.setItem("dailyCredits", "10");
     resetDailyCreditsAtMidnight(sql);
   }, timeUntilMidnight);
 }

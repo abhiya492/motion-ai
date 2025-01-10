@@ -9,6 +9,8 @@ import {
   generateBlogPostAction,
   transcribeUploadedFile,
 } from "@/actions/upload-actions";
+import { currentUser } from "@clerk/nextjs/server";
+import { getUserDailyCredits } from "@/lib/user-helpers";
 
 // Define the UploadResponse type
 type UploadResponse = {
@@ -63,10 +65,19 @@ export default function UploadForm() {
       return; // Early return on validation failure
     }
 
-    // Check and decrement daily credits
-    const userId = "someUserId"; // Replace with actual userId if available
-    const response = await fetch(`/api/credits?userId=${userId}`);
-    const { remainingCredits } = await response.json();
+    const user = await currentUser();
+    if (!user) {
+      toast({
+        title: "User not authenticated",
+        description: "Please sign in to continue.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const userId = user.id;
+    const sql = await getDbConnection();
+    const remainingCredits = await getUserDailyCredits(sql, userId);
 
     if (remainingCredits <= 0) {
       toast({
@@ -98,7 +109,7 @@ export default function UploadForm() {
 
       const transformedResp = resp.map((file) => ({
         serverData: {
-          userId: "someUserId", // Replace with actual userId if available
+          userId: userId,
           file: {
             url: file.fileUrl,
             name: file.fileKey,

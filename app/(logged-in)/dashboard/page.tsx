@@ -9,6 +9,7 @@ import {
   hasCancelledSubscription,
   updateUser,
   getUserDailyCredits,
+  resetDailyCreditsAtMidnight,
 } from "@/lib/user-helpers";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
@@ -47,6 +48,9 @@ export default async function Dashboard() {
 
   // Fetch daily credits from the database
   const dailyCredits = userId ? await getUserDailyCredits(sql, userId) : 0;
+
+  // Call resetDailyCreditsAtMidnight function
+  resetDailyCreditsAtMidnight(sql);
 
   return (
     <BgGradient>
