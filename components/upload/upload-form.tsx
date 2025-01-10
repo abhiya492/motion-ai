@@ -11,7 +11,7 @@ import {
 } from "@/actions/upload-actions";
 import { currentUser } from "@clerk/nextjs/server";
 import { getUserDailyCredits } from "@/lib/user-helpers";
-
+import getDbConnection from "@/lib/db";
 // Define the UploadResponse type
 type UploadResponse = {
   fileUrl: string;
