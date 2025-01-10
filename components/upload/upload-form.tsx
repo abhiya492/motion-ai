@@ -139,6 +139,10 @@ export default function UploadForm() {
         await fetch(`/api/decrement-credits?userId=${userId}`, {
           method: "POST",
         });
+
+        // Update localStorage with the new credit count
+        const newRemainingCredits = remainingCredits - 1;
+        localStorage.setItem("dailyCredits", newRemainingCredits.toString());
       }
     }
   };
