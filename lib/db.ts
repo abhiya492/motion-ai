@@ -47,3 +47,12 @@ export default async function getDbConnection() {
     );
   }
 }
+
+export async function resetDailyCredits(sql) {
+  try {
+    await sql`UPDATE users SET daily_credits = 10`;
+  } catch (error) {
+    console.error("Error resetting daily credits", error);
+    throw error;
+  }
+}

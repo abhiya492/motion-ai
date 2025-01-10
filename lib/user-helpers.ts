@@ -42,5 +42,28 @@ export async function getUserDailyCredits(
   userId: string
 ) {
   const query = await sql`SELECT daily_credits FROM users WHERE id = ${userId}`;
-  return query[0]?.daily_credits ?? 10;
+  const dailyCredits = query[0]?.daily_credits ?? 10;
+  localStorage.setItem("dailyCredits", dailyCredits.toString());
+  return dailyCredits;
+}
+
+export async function resetDailyCreditsAtMidnight(
+  sql: NeonQueryFunction<false, false>
+) {
+  const now = new Date();
+  const nextMidnight = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() + 1,
+    0,
+    0,
+    0
+  );
+  const timeUntilMidnight = nextMidnight.getTime() - now.getTime();
+
+  setTimeout(async () => {
+    await sql`UPDATE users SET daily_credits = 10`;
+    localStorage.setItem("dailyCredits", "10");
+    resetDailyCreditsAtMidnight(sql);
+  }, timeUntilMidnight);
 }
