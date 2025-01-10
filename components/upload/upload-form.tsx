@@ -117,16 +117,6 @@ export default function UploadForm() {
         },
       }));
 
-      if (!transformedResp || transformedResp.length === 0) {
-        console.error("Error: resp is undefined or empty");
-        toast({
-          title: "Something went wrong",
-          description: "Please use a different file",
-          variant: "destructive",
-        });
-        return;
-      }
-
       const result = await transcribeUploadedFile(transformedResp);
       const { data = null, message = null } = result || {};
 

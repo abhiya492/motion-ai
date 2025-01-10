@@ -38,15 +38,6 @@ export async function transcribeUploadedFile(
 
   const response = await fetch(fileUrl);
 
-  if (!response.ok) {
-    console.error("Error: response is not a valid audio file");
-    return {
-      success: false,
-      message: "Invalid audio file",
-      data: null,
-    };
-  }
-
   try {
     const transcriptions = await openai.audio.transcriptions.create({
       model: "whisper-1",
@@ -169,7 +160,6 @@ export async function generateBlogPostAction({
     });
 
     if (!blogPost) {
-      console.error("Error: blogPost is undefined");
       return {
         success: false,
         message: "Blog post generation failed, please try again...",
