@@ -38,6 +38,7 @@ export default async function getDbConnection() {
     
     return sql;
   } catch (error) {
+    console.error("Error connecting to the database", error);
     if (error instanceof DatabaseConnectionError) {
       throw error;
     }

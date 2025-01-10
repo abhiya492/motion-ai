@@ -21,21 +21,40 @@ export default async function Dashboard() {
   }
 
   const email = clerkUser?.emailAddresses?.[0].emailAddress ?? "";
-  const sql = await getDbConnection();
+  let sql;
+  try {
+    sql = await getDbConnection();
+  } catch (error) {
+    console.error("Error connecting to the database", error);
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-red-500 text-lg">Internal Server Error. Please try again later.</p>
+      </div>
+    );
+  }
 
   // Update the user id
   let userId = null;
   let priceId = null;
 
-  await hasCancelledSubscription(sql, email);
-  const user = await doesUserExist(sql, email);
+  try {
+    await hasCancelledSubscription(sql, email);
+    const user = await doesUserExist(sql, email);
 
-  if (user) {
-    userId = clerkUser?.id;
-    if (userId) {
-      await updateUser(sql, userId, email);
+    if (user) {
+      userId = clerkUser?.id;
+      if (userId) {
+        await updateUser(sql, userId, email);
+      }
+      priceId = user[0].price_id;
     }
-    priceId = user[0].price_id;
+  } catch (error) {
+    console.error("Error fetching user data", error);
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-red-500 text-lg">Internal Server Error. Please try again later.</p>
+      </div>
+    );
   }
 
   const { id: planTypeId = "starter", name: planTypeName } = getPlanType(priceId);
@@ -43,11 +62,31 @@ export default async function Dashboard() {
   const isProPlan = planTypeId === "pro";
 
   // Check number of posts per plan
-  const posts = await sql`SELECT * FROM posts WHERE user_id = ${userId}`;
+  let posts;
+  try {
+    posts = await sql`SELECT * FROM posts WHERE user_id = ${userId}`;
+  } catch (error) {
+    console.error("Error fetching posts", error);
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-red-500 text-lg">Internal Server Error. Please try again later.</p>
+      </div>
+    );
+  }
   const isValidBasicPlan = isBasicPlan && posts.length < 3;
 
   // Fetch daily credits from the database
-  const dailyCredits = userId ? await getUserDailyCredits(sql, userId) : 0;
+  let dailyCredits = 0;
+  try {
+    dailyCredits = userId ? await getUserDailyCredits(sql, userId) : 0;
+  } catch (error) {
+    console.error("Error fetching daily credits", error);
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-red-500 text-lg">Internal Server Error. Please try again later.</p>
+      </div>
+    );
+  }
 
   // Call resetDailyCreditsAtMidnight function
   resetDailyCreditsAtMidnight(sql);
