@@ -11,51 +11,45 @@ import {
 } from "@/lib/user-helpers";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { useToast } from "@/hooks/use-toast";
 
 export default async function Dashboard() {
-  const { toast } = useToast();
-  let clerkUser;
+  const clerkUser = await currentUser();
 
-  try {
-    clerkUser = await currentUser();
-    if (!clerkUser) {
-      throw new Error("User authentication failed");
-    }
-  } catch (error) {
-    console.error("Error during user authentication", error);
-    toast({
-      title: "Authentication Error",
-      description: "Failed to authenticate user. Please sign in again.",
-      variant: "destructive",
-    });
+  if (!clerkUser) {
     return redirect("/sign-in");
   }
 
   const email = clerkUser?.emailAddresses?.[0].emailAddress ?? "";
+
   const sql = await getDbConnection();
 
-  // Update the user id
+  //updatethe user id
   let userId = null;
   let priceId = null;
 
-  await hasCancelledSubscription(sql, email);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const hasUserCancelled = await hasCancelledSubscription(sql, email);
   const user = await doesUserExist(sql, email);
 
   if (user) {
+    //update the user_id in users table
     userId = clerkUser?.id;
     if (userId) {
       await updateUser(sql, userId, email);
     }
+
     priceId = user[0].price_id;
   }
 
-  const { id: planTypeId = "starter", name: planTypeName } = getPlanType(priceId);
+  const { id: planTypeId = "starter", name: planTypeName } =
+    getPlanType(priceId);
+
   const isBasicPlan = planTypeId === "basic";
   const isProPlan = planTypeId === "pro";
 
-  // Check number of posts per plan
+  // check number of posts per plan
   const posts = await sql`SELECT * FROM posts WHERE user_id = ${userId}`;
+
   const isValidBasicPlan = isBasicPlan && posts.length < 3;
 
   return (
