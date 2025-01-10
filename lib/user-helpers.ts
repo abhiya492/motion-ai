@@ -36,32 +36,3 @@ export function getPlanType(priceId: string) {
   const checkPlanType = plansMap.filter((plan) => plan.priceId === priceId);
   return checkPlanType?.[0];
 }
-
-export async function getUserDailyCredits(
-  sql: NeonQueryFunction<false, false>,
-  userId: string
-) {
-  const query = await sql`SELECT daily_credits FROM users WHERE id = ${userId}`;
-  const dailyCredits = query[0]?.daily_credits ?? 10;
-  return dailyCredits;
-}
-
-export async function resetDailyCreditsAtMidnight(
-  sql: NeonQueryFunction<false, false>
-) {
-  const now = new Date();
-  const nextMidnight = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate() + 1,
-    0,
-    0,
-    0
-  );
-  const timeUntilMidnight = nextMidnight.getTime() - now.getTime();
-
-  setTimeout(async () => {
-    await sql`UPDATE users SET daily_credits = 10`;
-    resetDailyCreditsAtMidnight(sql);
-  }, timeUntilMidnight);
-}
