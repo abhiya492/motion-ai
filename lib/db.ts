@@ -28,9 +28,11 @@ export default async function getDbConnection() {
     return sql;
   } catch (error) {
     if (error instanceof DatabaseConnectionError) {
+      console.error(error.message);
       throw error;
     }
     
+    console.error(`Failed to connect to database: ${error instanceof Error ? error.message : 'Unknown error'}`);
     throw new DatabaseConnectionError(
       `Failed to connect to database: ${error instanceof Error ? error.message : 'Unknown error'}`
     );

@@ -12,8 +12,39 @@ export default async function Page() {
     return redirect("/sign-in");
   }
 
-  const sql = await getDbConnection();
-  const posts = await sql`SELECT * from posts where user_id = ${user.id}`;
+  let sql;
+  try {
+    sql = await getDbConnection();
+  } catch (error) {
+    console.error("Error connecting to the database", error);
+    return (
+      <main className="mx-auto w-full max-w-screen-xl px-2.5 lg:px-0 mb-12 mt-28">
+        <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+          Error
+        </h2>
+        <p className="text-gray-600 text-lg lg:text-xl mb-4">
+          Unable to connect to the database. Please try again later.
+        </p>
+      </main>
+    );
+  }
+
+  let posts;
+  try {
+    posts = await sql`SELECT * from posts where user_id = ${user.id}`;
+  } catch (error) {
+    console.error("Error querying the database", error);
+    return (
+      <main className="mx-auto w-full max-w-screen-xl px-2.5 lg:px-0 mb-12 mt-28">
+        <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+          Error
+        </h2>
+        <p className="text-gray-600 text-lg lg:text-xl mb-4">
+          Unable to retrieve posts. Please try again later.
+        </p>
+      </main>
+    );
+  }
 
   return (
     <main className="mx-auto w-full max-w-screen-xl px-2.5 lg:px-0 mb-12 mt-28">
