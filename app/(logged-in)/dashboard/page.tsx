@@ -20,10 +20,9 @@ export default async function Dashboard() {
   }
 
   const email = clerkUser?.emailAddresses?.[0].emailAddress ?? "";
-
   const sql = await getDbConnection();
 
-  //updatethe user id
+  // Update the user id
   let userId = null;
   let priceId = null;
 
@@ -31,29 +30,23 @@ export default async function Dashboard() {
   const user = await doesUserExist(sql, email);
 
   if (user) {
-    //update the user_id in users table
     userId = clerkUser?.id;
     if (userId) {
       await updateUser(sql, userId, email);
     }
-
     priceId = user[0].price_id;
   }
 
-  const { id: planTypeId = "starter", name: planTypeName } =
-    getPlanType(priceId);
-
+  const { id: planTypeId = "starter", name: planTypeName } = getPlanType(priceId);
   const isBasicPlan = planTypeId === "basic";
   const isProPlan = planTypeId === "pro";
 
-  // check number of posts per plan
+  // Check number of posts per plan
   const posts = await sql`SELECT * FROM posts WHERE user_id = ${userId}`;
-
   const isValidBasicPlan = isBasicPlan && posts.length < 3;
 
   // Fetch daily credits from the database
-  const dailyCredits = await getUserDailyCredits(sql, userId);
-  const remainingCredits = dailyCredits;
+  const dailyCredits = userId ? await getUserDailyCredits(sql, userId) : 0;
 
   return (
     <BgGradient>
@@ -85,13 +78,13 @@ export default async function Dashboard() {
           <p className="mt-2 text-lg leading-8 text-gray-600 max-w-2xl text-center">
             You have{" "}
             <span className="font-bold text-amber-600 bg-amber-100 px-2 py-1 rounded-md">
-              {remainingCredits}
+              {dailyCredits}
             </span>{" "}
             daily credits remaining.
           </p>
 
-          {isValidBasicPlan || isProPlan ? (
-            remainingCredits > 0 ? (
+          {dailyCredits > 0 ? (
+            (isValidBasicPlan || isProPlan) ? (
               <BgGradient>
                 <UploadForm />
               </BgGradient>
