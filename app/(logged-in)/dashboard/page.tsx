@@ -8,6 +8,7 @@ import {
   getPlanType,
   hasCancelledSubscription,
   updateUser,
+  getUserDailyCredits,
 } from "@/lib/user-helpers";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
@@ -51,8 +52,8 @@ export default async function Dashboard() {
   const isValidBasicPlan = isBasicPlan && posts.length < 3;
 
   // Fetch daily credits from the database
-  const dailyCredits = await sql`SELECT daily_credits FROM users WHERE id = ${userId}`;
-  const remainingCredits = dailyCredits[0]?.daily_credits ?? 10;
+  const dailyCredits = await getUserDailyCredits(sql, userId);
+  const remainingCredits = dailyCredits;
 
   return (
     <BgGradient>
