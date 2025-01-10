@@ -21,7 +21,15 @@ export async function updatePostAction(data: {
     const sql = await getDbConnection();
 
     const [title, ...contentParts] = content?.split("\n\n") || [];
-    const updatedTitle = title.split("#")[1].trim();
+    const updatedTitle = title?.split("#")[1]?.trim();
+
+    if (!updatedTitle) {
+      console.error("Error: updatedTitle is undefined for postId", postId);
+      return {
+        success: false,
+        message: "Title is missing or invalid",
+      };
+    }
 
     await sql`UPDATE posts SET content = ${content}, title = ${updatedTitle} where id = ${postId}`;
   } catch (error) {
