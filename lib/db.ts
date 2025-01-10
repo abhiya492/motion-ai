@@ -18,7 +18,7 @@ export default async function getDbConnection() {
 
     // Optional: Configure connection timeouts
     neonConfig.fetchConnectionCache = true;
-    // neonConfig.connectionTimeoutMillis is not a valid property, so it has been removed
+    neonConfig.connectionTimeoutMillis = 5000; // Set connection timeout to 5000 milliseconds
 
     const sql = neon(process.env.DATABASE_URL);
     
