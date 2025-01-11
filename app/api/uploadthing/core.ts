@@ -6,7 +6,6 @@ const f = createUploadthing();
 
 export const ourFileRouter = {
   videoOrAudioUploader: f({ video: { maxFileSize: "32MB" } })
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     .middleware(async ({ req }) => {
       const user = await currentUser();
 
@@ -21,6 +20,10 @@ export const ourFileRouter = {
       console.log("Upload complete for userId:", metadata.userId);
 
       console.log("file url", file.url);
+
+      // Log the user and file details after the upload is complete
+      console.log("User ID:", metadata.userId);
+      console.log("File details:", file);
 
       // !!! Whatever is returned here is sent to the clientside `onClientUploadComplete` callback
       return { userId: metadata.userId, file };
