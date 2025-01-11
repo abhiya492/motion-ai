@@ -61,8 +61,8 @@ pnpm (or npm/yarn)
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/your-username/video-to-blog-ai.git
-cd video-to-blog-ai
+git clone https://github.com/abhiya492/motion-ai.git
+cd motion-ai
 ```
 
 2. Install dependencies:
