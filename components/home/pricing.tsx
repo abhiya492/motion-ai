@@ -52,20 +52,29 @@ export default function Pricing() {
                     ))}
                   </ul>
                   <div className="space-y-2">
-                    <Button
-                      variant={"link"}
-                      className={cn(
-                        "border-2 rounded-full flex gap-2 bg-black text-gray-100",
-                        id === "pro" && "border-amber-300 px-4"
-                      )}
-                    >
-                      <Link
-                        href={paymentLink}
-                        className="flex gap-1 items-center"
+                    {id === "basic" ? (
+                      <Button
+                        variant={"link"}
+                        className="border-2 rounded-full flex gap-2 bg-black text-gray-100"
                       >
-                        Get MOTION-AI <ArrowRight size={18} />
-                      </Link>
-                    </Button>
+                        <span>Free</span>
+                      </Button>
+                    ) : (
+                      <Button
+                        variant={"link"}
+                        className={cn(
+                          "border-2 rounded-full flex gap-2 bg-black text-gray-100",
+                          id === "pro" && "border-amber-300 px-4"
+                        )}
+                      >
+                        <Link
+                          href={paymentLink}
+                          className="flex gap-1 items-center"
+                        >
+                          Get MOTION-AI <ArrowRight size={18} />
+                        </Link>
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>

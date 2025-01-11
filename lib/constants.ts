@@ -5,7 +5,6 @@ export const plansMap = [
       description: "Get started with SpeakEasy!",
       price: "1",
       items: ["3 Blog Posts", "3 Transcription"],
-      paymentLink: "https://buy.stripe.com/test_28obKg1J6bqB0VO002",
       priceId:
         process.env.NODE_ENV === "development"
           ? "price_1PtLVqBPnsISnc82CW4au1uq"
