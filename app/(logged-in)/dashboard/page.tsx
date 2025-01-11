@@ -52,6 +52,8 @@ export default async function Dashboard() {
 
   const isValidBasicPlan = isBasicPlan && posts.length < 3;
 
+  console.log("isValidBasicPlan:", isValidBasicPlan);
+
   return (
     <BgGradient>
       <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8">
@@ -79,7 +81,7 @@ export default async function Dashboard() {
             </p>
           )}
 
-          {isValidBasicPlan || isProPlan ? (
+          {isValidBasicPlan ? (
             <BgGradient>
               <UploadForm />
             </BgGradient>
