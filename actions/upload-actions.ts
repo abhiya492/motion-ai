@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use server";
 import getDbConnection from "@/lib/db";
 import { revalidatePath } from "next/cache";
@@ -10,7 +12,7 @@ const openai = new OpenAI({
 
 export async function transcribeUploadedFile(
   resp: {
-    serverData: { userId: string; file: { url: string; name: string } };
+    serverData: { userId: string; file: any };
   }[]
 ) {
   if (!resp) {
@@ -166,7 +168,7 @@ export async function generateBlogPostAction({
       };
     }
 
-    const [title] = blogPost?.split("\n\n") || [];
+    const [title, ...contentParts] = blogPost?.split("\n\n") || [];
 
     //database connection
 

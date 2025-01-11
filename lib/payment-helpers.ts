@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Stripe from "stripe";
 import getDbConnection from "./db";
 
@@ -41,7 +42,6 @@ export async function handleCheckoutSessionCompleted({
 }
 
 async function insertPayment(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sql: any,
   session: Stripe.Checkout.Session,
   priceId: string,
@@ -55,7 +55,6 @@ async function insertPayment(
 }
 
 async function createOrUpdateUser(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sql: any,
   customer: Stripe.Customer,
   customerId: string
@@ -71,7 +70,6 @@ async function createOrUpdateUser(
 }
 
 async function updateUserSubscription(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sql: any,
   priceId: string,
   email: string

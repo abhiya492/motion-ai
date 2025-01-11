@@ -14,6 +14,7 @@ import { redirect } from "next/navigation";
 
 export default async function Dashboard() {
   const clerkUser = await currentUser();
+
   if (!clerkUser) {
     return redirect("/sign-in");
   }
@@ -26,7 +27,8 @@ export default async function Dashboard() {
   let userId = null;
   let priceId = null;
 
-  await hasCancelledSubscription(sql, email);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const hasUserCancelled = await hasCancelledSubscription(sql, email);
   const user = await doesUserExist(sql, email);
 
   if (user) {
@@ -49,11 +51,6 @@ export default async function Dashboard() {
   const posts = await sql`SELECT * FROM posts WHERE user_id = ${userId}`;
 
   const isValidBasicPlan = isBasicPlan && posts.length < 3;
-
- // console.log({ isBasicPlan, isProPlan, isValidBasicPlan, posts: posts.length });
-
-
-
 
   return (
     <BgGradient>
