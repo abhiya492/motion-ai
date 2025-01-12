@@ -107,7 +107,7 @@ async function getUserBlogPosts(userId: string) {
     SELECT content FROM posts 
     WHERE user_id = ${userId} 
     ORDER BY created_at DESC 
-    LIMIT 3
+    LIMIT 30
   `;
     return posts.map((post) => post.content).join("\n\n");
   } catch (error) {
