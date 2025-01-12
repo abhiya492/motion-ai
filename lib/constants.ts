@@ -4,7 +4,7 @@ export const plansMap = [
       name: "Basic",
       description: "Get started with SpeakEasy!",
       price: "1",
-      items: ["3 Blog Posts", "3 Transcription"],
+      items: ["30 Blog Posts", "30 Transcription"],
       priceId:
         process.env.NODE_ENV === "development"
           ? "price_1PtLVqBPnsISnc82CW4au1uq"
