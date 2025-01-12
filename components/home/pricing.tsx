@@ -10,7 +10,7 @@ export default function Pricing() {
     <section className="relative overflow-hidden" id="pricing">
       <div className="py-12 lg:py-24 max-w-5xl mx-auto px-12 lg:px-0">
         <div className="flex items-center justify-center w-full pb-12">
-          <h2 className="font-bold text-xl uppercase mb-8 text-purple-600">
+          <h2 className="font-bold text-xl uppercase mb-8 text-purple-700">
             Pricing
           </h2>
         </div>
@@ -55,7 +55,7 @@ export default function Pricing() {
                     {id === "basic" ? (
                       <Button
                         variant={"link"}
-                        className="border-2 rounded-full flex gap-2 bg-black text-gray-100"
+                        className="border-2 rounded-full flex gap-2 bg-black text-white"
                       >
                         <span>Free</span>
                       </Button>
@@ -63,7 +63,7 @@ export default function Pricing() {
                       <Button
                         variant={"link"}
                         className={cn(
-                          "border-2 rounded-full flex gap-2 bg-black text-gray-100",
+                          "border-2 rounded-full flex gap-2 bg-black text-white",
                           id === "pro" && "border-amber-300 px-4"
                         )}
                       >
