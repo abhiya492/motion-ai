@@ -36,3 +36,18 @@ export function getPlanType(priceId: string) {
   const checkPlanType = plansMap.filter((plan) => plan.priceId === priceId);
   return checkPlanType?.[0];
 }
+
+export async function getDailyUsage(
+  sql: NeonQueryFunction<false, false>,
+  userId: string
+) {
+  const query = await sql`
+    SELECT usage_count FROM daily_usage 
+    WHERE user_id = ${userId} AND usage_date = CURRENT_DATE
+  `;
+  return query.length > 0 ? query[0].usage_count : 0;
+}
+
+export async function resetDailyUsage(sql: NeonQueryFunction<false, false>) {
+  await sql`UPDATE daily_usage SET usage_count = 0 WHERE usage_date < CURRENT_DATE`;
+}
