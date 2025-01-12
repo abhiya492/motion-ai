@@ -116,7 +116,7 @@ export default function UploadForm() {
           accept="audio/*,video/*"
           required
         />
-        <Button className="bg-purple-700">Transcribe</Button>
+        <Button className="bg-purple-600">Transcribe</Button>
       </div>
     </form>
   );
