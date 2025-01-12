@@ -2,7 +2,7 @@ import BgGradient from "@/components/common/bg-gradient";
 import { Badge } from "@/components/ui/badge";
 import UpgradeYourPlan from "@/components/upload/upgrade-your-plan";
 import UploadForm from "@/components/upload/upload-form";
-import getDbConnection from "@/lib/db";
+import getDbConnection, { resetDailyUsage, incrementDailyUsage } from "@/lib/db";
 import {
   doesUserExist,
   getPlanType,
@@ -22,6 +22,9 @@ export default async function Dashboard() {
   const email = clerkUser?.emailAddresses?.[0].emailAddress ?? "";
 
   const sql = await getDbConnection();
+
+  // Reset daily usage at the start of the Dashboard function
+  await resetDailyUsage();
 
   //updatethe user id
   let userId = null;
@@ -50,7 +53,13 @@ export default async function Dashboard() {
   // check number of posts per plan
   const posts = await sql`SELECT * FROM posts WHERE user_id = ${userId}`;
 
-  const isValidBasicPlan = isBasicPlan && posts.length < 30;
+  // Check daily usage from the daily_usage table
+  const dailyUsage = await sql`
+    SELECT usage_count FROM daily_usage 
+    WHERE user_id = ${userId} AND usage_date = CURRENT_DATE
+  `;
+
+  const isValidBasicPlan = isBasicPlan && dailyUsage[0]?.usage_count < 30;
 
   console.log("isValidBasicPlan:", isValidBasicPlan);
 
