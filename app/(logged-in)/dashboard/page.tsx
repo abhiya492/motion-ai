@@ -58,11 +58,11 @@ export default async function Dashboard() {
     <BgGradient>
       <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8">
         <div className="flex flex-col items-center justify-center gap-6 text-center">
-          <Badge className="bg-gradient-to-r from-purple-600 to-pink-700 text-white px-4 py-1 text-lg font-semibold capitalize">
+          <Badge className="bg-gradient-to-r from-purple-600 to-pink-700 text-white px-6 py-2 text-lg font-semibold capitalize shadow-lg transform transition duration-300 ease-in-out hover:scale-105">
             {planTypeName} Plan
           </Badge>
 
-          <h2 className="capitalize text-4xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+          <h2 className="capitalize text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
             Start creating amazing content
           </h2>
 
