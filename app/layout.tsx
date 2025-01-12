@@ -37,7 +37,8 @@ export default function RootLayout({
         <body
           className={cn(
             "min-h-screen bg-background font-sans antialiased",
-            fontSans.variable
+            fontSans.variable,
+            typeof window !== "undefined" && window.document.body.classList.contains("vsc-initialized") ? "vsc-initialized" : ""
           )}
         >
           <Header></Header>
