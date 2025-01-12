@@ -58,20 +58,20 @@ export default async function Dashboard() {
     <BgGradient>
       <div className="container mx-auto py-24 sm:py-32">
         <div className="flex flex-col items-center justify-center gap-6 text-center">
-          <Badge className="bg-gradient-to-r from-purple-700 to-pink-800 text-white px-4 py-1 text-lg font-semibold capitalize">
+          <Badge className="bg-gradient-to-r from-purple-600 to-pink-700 text-white px-6 py-2 text-lg font-semibold capitalize shadow-lg transform transition duration-300 ease-in-out hover:scale-105">
             {planTypeName} Plan
           </Badge>
 
-          <h2 className="capitalize text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+          <h2 className="capitalize text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
             Start creating amazing content
           </h2>
 
-          <p className="mt-2 text-lg leading-8 text-gray-600 max-w-2xl text-center">
+          <p className="mt-2 text-lg leading-8 text-gray-700 max-w-2xl text-center">
             Upload your audio or video file and let our AI do the magic!
           </p>
 
           {(isBasicPlan || isProPlan) && (
-            <p className="mt-2 text-lg leading-8 text-gray-600 max-w-2xl text-center">
+            <p className="mt-2 text-lg leading-8 text-gray-700 max-w-2xl text-center">
               You get{" "}
               <span className="font-bold text-amber-600 bg-amber-100 px-2 py-1 rounded-md">
                 {isBasicPlan ? "3" : "Unlimited"} blog posts

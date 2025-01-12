@@ -104,7 +104,7 @@ export default function ContentEditor({
       <BgGradient className="opacity-20">
         <ForwardRefEditor
           markdown={posts[0].content}
-          className="markdown-content border-dotted border-gray-200 border-2 p-4 rounded-md animate-in ease-in-out duration-75"
+          className="markdown-content border-dotted border-gray-300 border-2 p-4 rounded-md animate-in ease-in-out duration-75"
           onChange={handleContentChange}
         ></ForwardRefEditor>
       </BgGradient>
