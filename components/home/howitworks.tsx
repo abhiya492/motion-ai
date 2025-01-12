@@ -16,7 +16,7 @@ export default function HowItWorks() {
         />
       </div>
       <div className="flex items-center justify-center w-full pb-6">
-        <h2 className="font-bold text-xl uppercase mb-8 text-purple-600">
+        <h2 className="font-bold text-xl uppercase mb-8 text-purple-700">
           How it works
         </h2>
       </div>

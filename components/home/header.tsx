@@ -12,7 +12,7 @@ const NavLink = ({
   return (
     <Link
       href={href}
-      className="transition-colors duration-200 text-gray-600 hover:text-purple-500"
+      className="transition-colors duration-200 text-gray-700 hover:text-purple-500"
     >
       {children}
     </Link>
