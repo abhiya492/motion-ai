@@ -137,26 +137,3 @@ body {
     @apply bg-transparent p-0;
   }
 }
-
-/* Custom CSS for better design */
-.bg-gradient-to-r {
-  background: linear-gradient(to right, var(--tw-gradient-stops));
-}
-
-.text-gradient {
-  background: linear-gradient(to right, #6b46c1, #b83280);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.shadow-lg {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-.transition-transform {
-  transition: transform 0.3s ease-in-out;
-}
-
-.hover-scale-105:hover {
-  transform: scale(1.05);
-}
