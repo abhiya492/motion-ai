@@ -50,12 +50,13 @@ export async function transcribeUploadedFile(
   }
 
   const response = await fetch(fileUrl);
+  const clonedResponse = response.clone(); 
 
   try {
     const transcriptions = await retryWithExponentialBackoff(() =>
       openai.audio.transcriptions.create({
         model: "whisper-1",
-        file: response,
+        file: clonedResponse,
       })
     );
 
