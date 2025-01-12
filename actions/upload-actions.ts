@@ -10,6 +10,17 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+async function retryWithExponentialBackoff(fn, retries = 3, delay = 1000) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (i === retries - 1) throw error;
+      await new Promise((resolve) => setTimeout(resolve, delay * 2 ** i));
+    }
+  }
+}
+
 export async function transcribeUploadedFile(
   resp: {
     serverData: { userId: string; file: any };
@@ -41,10 +52,12 @@ export async function transcribeUploadedFile(
   const response = await fetch(fileUrl);
 
   try {
-    const transcriptions = await openai.audio.transcriptions.create({
-      model: "whisper-1",
-      file: response,
-    });
+    const transcriptions = await retryWithExponentialBackoff(() =>
+      openai.audio.transcriptions.create({
+        model: "whisper-1",
+        file: response,
+      })
+    );
 
     console.log({ transcriptions });
     return {
