@@ -27,7 +27,7 @@ export default async function Dashboard() {
   let userId = null;
   let priceId = null;
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   const hasUserCancelled = await hasCancelledSubscription(sql, email);
   const user = await doesUserExist(sql, email);
 
@@ -50,7 +50,7 @@ export default async function Dashboard() {
   // check number of posts per plan
   const posts = await sql`SELECT * FROM posts WHERE user_id = ${userId}`;
 
-  const isValidBasicPlan = isBasicPlan && posts.length < 3;
+  const isValidBasicPlan = isBasicPlan && posts.length < 30;
 
   console.log("isValidBasicPlan:", isValidBasicPlan);
 

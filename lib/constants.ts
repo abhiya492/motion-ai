@@ -2,7 +2,7 @@ export const plansMap = [
     {
       id: "basic",
       name: "Basic",
-      description: "Get started with SpeakEasy!",
+      description: "Get started with MotionAI!",
       price: "1",
       items: ["3 Blog Posts", "3 Transcription"],
       priceId:
