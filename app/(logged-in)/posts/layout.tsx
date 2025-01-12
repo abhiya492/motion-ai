@@ -8,7 +8,7 @@ export default function PostsLayout({ children }: { children: ReactNode }) {
       <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8">
         <div className="flex flex-col items-center justify-center gap-6 text-center">
           <Badge className="bg-gradient-to-r from-purple-700 to-pink-800 text-white px-4 py-1 text-lg font-semibold capitalize">
-            Posts
+            Upload your Posts and see magic
           </Badge>
           {children}
         </div>
