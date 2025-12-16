@@ -6,6 +6,8 @@ import Header from "@/components/home/header";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "@/components/ui/toaster";
 import { ORIGIN_URL } from "@/lib/constants";
+import { ThemeProvider } from "@/components/common/theme-provider";
+import AppLayout from "@/components/common/app-layout";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -33,17 +35,20 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en">
+      <html lang="en" suppressHydrationWarning>
         <body
           className={cn(
             "min-h-screen bg-background font-sans antialiased",
-            fontSans.variable,
-""
+            fontSans.variable
           )}
         >
-          <Header />
-          <main>{children}</main>
-          <Toaster />
+          <ThemeProvider>
+            <Header />
+            <AppLayout>
+              <main>{children}</main>
+            </AppLayout>
+            <Toaster />
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>

@@ -44,17 +44,25 @@ type UploadAction = (
   formData: FormData
 ) => Promise<UploadState>;
 
-export default function ContentEditor({
+export interface ContentEditorProps {
+  posts?: Array<{ content: string; title: string; id: string }>;
+  initialContent?: string;
+  postId?: number;
+  onContentChange?: (content: string) => void;
+}
+
+export function ContentEditor({
   posts,
-}: {
-  posts: Array<{ content: string; title: string; id: string }>;
-}) {
-  const [content, setContent] = useState(posts[0].content);
+  initialContent,
+  postId,
+  onContentChange,
+}: ContentEditorProps) {
+  const [content, setContent] = useState(initialContent || posts?.[0]?.content || '');
   const [isChanged, setIsChanged] = useState(false);
 
   const updatedPostActionWithId = async (formData: FormData) => {
     return await updatePostAction({
-      postId: posts[0].id,
+      postId: postId?.toString() || posts?.[0]?.id || '',
       content,
     });
   };
@@ -67,10 +75,11 @@ export default function ContentEditor({
   const handleContentChange = useCallback((value: string) => {
     setContent(value);
     setIsChanged(true);
-  }, []);
+    onContentChange?.(value);
+  }, [onContentChange]);
 
   const handleExport = useCallback(() => {
-    const title = posts[0].title?.replace(/[^a-z0-9]/gi, '-').toLowerCase() || "blog-post";
+    const title = posts?.[0]?.title?.replace(/[^a-z0-9]/gi, '-').toLowerCase() || "blog-post";
     const filename = `${title}.md`;
 
     const blob = new Blob([content], { type: "text/markdown;charset=utf-8" });
@@ -106,11 +115,19 @@ export default function ContentEditor({
       </div>
       <BgGradient className="opacity-20">
         <ForwardRefEditor
-          markdown={posts[0].content}
+          markdown={content}
           className="markdown-content border-dotted border-gray-300 border-2 p-4 rounded-md animate-in ease-in-out duration-75"
           onChange={handleContentChange}
         ></ForwardRefEditor>
       </BgGradient>
     </form>
   );
+}
+
+export default function ContentEditorWrapper({
+  posts,
+}: {
+  posts: Array<{ content: string; title: string; id: string }>;
+}) {
+  return <ContentEditor posts={posts} />;
 }

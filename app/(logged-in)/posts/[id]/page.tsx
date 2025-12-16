@@ -1,7 +1,7 @@
 import getDbConnection from "@/lib/db";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import ContentEditor from "@/components/content/content-editor";
+import { EnhancedContentEditor } from "@/components/content/enhanced-content-editor";
 
 export default async function PostPage({ params }: { params: { id: string } }) {
   const user = await currentUser();
@@ -22,5 +22,11 @@ export default async function PostPage({ params }: { params: { id: string } }) {
     return redirect("/posts");
   }
 
-  return <ContentEditor posts={post} />;
+  const postData = post[0];
+  return (
+    <EnhancedContentEditor 
+      initialContent={postData.content}
+      postId={postData.id}
+    />
+  );
 }

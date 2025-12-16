@@ -1,6 +1,7 @@
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
+import ThemeToggle from "../common/theme-toggle";
 
 const NavLink = ({
   href,
@@ -12,7 +13,7 @@ const NavLink = ({
   return (
     <Link
       href={href}
-      className="transition-colors duration-200 text-gray-700 hover:text-purple-500"
+      className="transition-colors duration-200 text-gray-700 dark:text-gray-300 hover:text-purple-500 dark:hover:text-purple-400"
     >
       {children}
     </Link>
@@ -32,7 +33,7 @@ export default function Header() {
               height={32}
               className="hover:rotate-12 transform transition duration-200 ease-in-out"
             />
-            <span className="font-extrabold text-lg">SpeakEasy</span>
+            <span className="font-extrabold text-lg text-gray-900 dark:text-gray-100">SpeakEasy</span>
           </span>
         </NavLink>
       </div>
@@ -47,15 +48,18 @@ export default function Header() {
         <SignedIn>
           <div className="flex gap-2 items-center">
             <NavLink href="/dashboard">Upload a Video</NavLink>
-            {/** Profile */}
+            <ThemeToggle />
             <UserButton />
           </div>
         </SignedIn>
 
         <SignedOut>
-          <SignInButton>
-            <NavLink href="/sign-in">Sign In</NavLink>
-          </SignInButton>
+          <div className="flex gap-2 items-center">
+            <ThemeToggle />
+            <SignInButton>
+              <NavLink href="/sign-in">Sign In</NavLink>
+            </SignInButton>
+          </div>
         </SignedOut>
       </div>
     </nav>

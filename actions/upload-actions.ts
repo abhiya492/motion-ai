@@ -51,11 +51,14 @@ export async function transcribeUploadedFile(
   const clonedResponse = response.clone(); 
 
   try {
-    const transcriptionText = await retryWithExponentialBackoff(() =>
+    const transcriptionResult = await retryWithExponentialBackoff(() =>
       transcribeAudio(clonedResponse)
     );
     
-    const transcriptions = { text: transcriptionText };
+    const transcriptions = { 
+      text: transcriptionResult.text, 
+      language: transcriptionResult.language 
+    };
 
     console.log({ transcriptions });
     return {
@@ -116,18 +119,28 @@ async function getUserBlogPosts(userId: string) {
 async function generateBlogPost({
   transcriptions,
   userPosts,
+  targetLanguage,
+  sourceLanguage,
+  template,
 }: {
   transcriptions: string;
   userPosts: string;
+  targetLanguage?: string;
+  sourceLanguage?: string;
+  template?: string;
 }) {
-  return await generateBlogContent(transcriptions, userPosts);
+  return await generateBlogContent(transcriptions, userPosts, targetLanguage as any, sourceLanguage as any, template);
 }
 export async function generateBlogPostAction({
   transcriptions,
   userId,
+  targetLanguage = 'en',
+  template,
 }: {
-  transcriptions: { text: string };
+  transcriptions: { text: string; language?: string };
   userId: string;
+  targetLanguage?: string;
+  template?: string;
 }) {
   const userPosts = await getUserBlogPosts(userId);
 
@@ -137,6 +150,9 @@ export async function generateBlogPostAction({
     const blogPost = await generateBlogPost({
       transcriptions: transcriptions.text,
       userPosts,
+      targetLanguage,
+      sourceLanguage: transcriptions.language,
+      template,
     });
 
     if (!blogPost) {

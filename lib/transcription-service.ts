@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { detectLanguage, translateWithFallback, LanguageCode, SUPPORTED_LANGUAGES } from "./language-service";
 
 // Groq client setup
 const groq = new OpenAI({
@@ -27,7 +28,7 @@ async function transcribeWithHuggingFace(audioBuffer: ArrayBuffer): Promise<stri
   return result.text || "";
 }
 
-export async function transcribeAudio(fileResponse: Response): Promise<string> {
+export async function transcribeAudio(fileResponse: Response): Promise<{ text: string; language: LanguageCode }> {
   // Convert Response to File for API compatibility
   const arrayBuffer = await fileResponse.arrayBuffer();
   const blob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
@@ -48,7 +49,8 @@ export async function transcribeAudio(fileResponse: Response): Promise<string> {
       });
 
       console.log(`${provider.name} transcription successful`);
-      return transcription.text;
+      const detectedLang = await detectLanguage(transcription.text);
+      return { text: transcription.text, language: detectedLang };
     } catch (error) {
       console.error(`${provider.name} failed:`, error);
       continue;
@@ -60,7 +62,8 @@ export async function transcribeAudio(fileResponse: Response): Promise<string> {
     console.log("Trying Hugging Face for transcription...");
     const result = await transcribeWithHuggingFace(arrayBuffer);
     console.log("Hugging Face transcription successful");
-    return result;
+    const detectedLang = await detectLanguage(result);
+    return { text: result, language: detectedLang };
   } catch (error) {
     console.error("Hugging Face failed:", error);
   }
@@ -68,7 +71,13 @@ export async function transcribeAudio(fileResponse: Response): Promise<string> {
   throw new Error("All transcription providers failed");
 }
 
-export async function generateBlogContent(transcription: string, userPosts: string): Promise<string> {
+export async function generateBlogContent(
+  transcription: string, 
+  userPosts: string, 
+  targetLanguage: LanguageCode = 'en',
+  sourceLanguage?: LanguageCode,
+  template?: string
+): Promise<string> {
   const providers = [
     { 
       name: "Groq", 
@@ -84,16 +93,21 @@ export async function generateBlogContent(transcription: string, userPosts: stri
     },
   ];
 
-  const prompt = `You are a skilled content writer. Convert this transcription into a well-structured blog post in Markdown format.
+  const languageName = SUPPORTED_LANGUAGES[targetLanguage];
+  const basePrompt = template || `You are a skilled content writer. Convert this transcription into a well-structured blog post in Markdown format.
+
+Write the blog post in ${languageName}.
 
 Previous posts style reference:
 ${userPosts}
 
 Create a blog post with:
-1. SEO-friendly title on first line
-2. Engaging introduction
-3. Main content with headings (##, ###)
-4. Conclusion
+1. SEO-friendly title on first line in ${languageName}
+2. Engaging introduction in ${languageName}
+3. Main content with headings (##, ###) in ${languageName}
+4. Conclusion in ${languageName}`;
+  
+  const prompt = `${basePrompt}
 
 Transcription: ${transcription}`;
 
@@ -108,8 +122,13 @@ Transcription: ${transcription}`;
         max_tokens: provider.maxTokens,
       });
 
-      const content = completion.choices[0].message.content;
+      let content = completion.choices[0].message.content;
       if (content) {
+        // Translate if target language is different from English
+        if (targetLanguage !== 'en') {
+          console.log(`Translating content to ${SUPPORTED_LANGUAGES[targetLanguage]}...`);
+          content = await translateWithFallback(content, targetLanguage, 'en');
+        }
         console.log(`${provider.name} generation successful`);
         return content;
       }
