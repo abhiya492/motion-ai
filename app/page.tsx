@@ -31,7 +31,7 @@ export default function Home() {
 
       <footer className="bg-gray-300/20 flex h-20 py-24 px-12 z-20 relative overflow-hidden flex-col gap-2">
         <p>All Rights Reserved, {new Date().getFullYear()}</p>
-        <a href="https://x.com/ABHISHE96010387" target="_blank">
+        <a href="https://x.com/ABHISHE96010387" target="_blank" rel="noopener noreferrer">
           Built by Abhishek 🚀
         </a>
       </footer>

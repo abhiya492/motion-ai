@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useCallback, useMemo } from "react";
 import { z } from "zod";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -10,100 +11,103 @@ import {
   transcribeUploadedFile,
 } from "@/actions/upload-actions";
 
-const schema = z.object({
+const useSchema = () => useMemo(() => z.object({
   file: z
     .instanceof(File, { message: "Invalid file" })
     .refine(
-      (file) => file.size <= 20 * 1024 * 1024,
-      "File size must not exceed 20MB"
+      (file) => file.size <= 50 * 1024 * 1024,
+      "File size must not exceed 50MB"
     )
     .refine(
       (file) =>
         file.type.startsWith("audio/") || file.type.startsWith("video/"),
       "File must be an audio or a video file"
     ),
-});
+}), []);
 
 export default function UploadForm() {
   const { toast } = useToast();
+  const [isUploading, setIsUploading] = useState(false);
+  const schema = useSchema();
 
-  const { startUpload } = useUploadThing("videoOrAudioUploader", {
+  const { startUpload, isUploading: uploadThingLoading } = useUploadThing("videoOrAudioUploader", {
     onClientUploadComplete: () => {
-      toast({ title: "uploaded successfully!" });
+      toast({ title: "File uploaded successfully!" });
     },
     onUploadError: (err) => {
-      console.error("Error occurred", err);
+      console.error("Upload error:", err);
+      setIsUploading(false);
+      toast({
+        title: "Upload failed",
+        description: "Network timeout or file too large. Try a smaller file or check connection.",
+        variant: "destructive",
+      });
     },
     onUploadBegin: () => {
-      toast({ title: "Upload has begun 🚀!" });
+      setIsUploading(true);
+      toast({ title: "Upload started 🚀" });
     },
   });
 
   const handleTranscribe = async (formData: FormData) => {
+    if (isUploading || uploadThingLoading) return;
+    
     const file = formData.get("file") as File;
-
     const validatedFields = schema.safeParse({ file });
 
     if (!validatedFields.success) {
-      console.log(
-        "validatedFields",
-        validatedFields.error.flatten().fieldErrors
-      );
       toast({
-        title: "❌ Something went wrong",
+        title: "❌ Invalid file",
         variant: "destructive",
-        description:
-          validatedFields.error.flatten().fieldErrors.file?.[0] ??
-          "Invalid file",
+        description: validatedFields.error.flatten().fieldErrors.file?.[0] ?? "Please check file format and size",
       });
+      return;
     }
 
-    if (file) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const resp: any = await startUpload([file]);
-      console.log({ resp });
-
-      if (!resp) {
-        toast({
-          title: "Something went wrong",
-          description: "Please use a different file",
-          variant: "destructive",
-        });
+    try {
+      setIsUploading(true);
+      const resp = await startUpload([file]);
+      
+      if (!resp || !resp.length) {
+        throw new Error("Upload failed - no response");
       }
+
       toast({
-        title: "🎙️ Transcription is in progress...",
-        description:
-          "Hang tight! Our digital wizards are sprinkling magic dust on your file! ✨",
+        title: "🎙️ Processing audio...",
+        description: "Transcribing your file with AI",
       });
 
       const result = await transcribeUploadedFile(resp);
-      const { data = null, message = null } = result || {};
-
-      if (!result || (!data && !message)) {
-        toast({
-          title: "An unexpected error occurred",
-          description:
-            "An error occurred during transcription. Please try again.",
-        });
+      
+      if (!result?.success) {
+        throw new Error(result?.message || "Transcription failed");
       }
 
-      if (data) {
+      if (result.data) {
         toast({
-          title: "🤖 Generating AI blog post...",
-          description: "Please wait while we generate your blog post.",
+          title: "🤖 Creating blog post...",
+          description: "Generating content with AI",
         });
 
         await generateBlogPostAction({
-          transcriptions: data.transcriptions,
-          userId: data.userId,
+          transcriptions: result.data.transcriptions,
+          userId: result.data.userId,
         });
 
         toast({
-          title: "🎉 Woohoo! Your AI blog is created! 🎊",
-          description:
-            "Time to put on your editor hat, Click the post and edit it!",
+          title: "🎉 Blog post created!",
+          description: "Ready for editing",
         });
       }
+    } catch (error) {
+      console.error("Process error:", error);
+      toast({
+        title: "Process failed",
+        description: error instanceof Error ? error.message : "Please try again with a smaller file",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
     }
   };
   return (
@@ -116,7 +120,12 @@ export default function UploadForm() {
           accept="audio/*,video/*"
           required
         />
-        <Button className="bg-purple-700">Transcribe</Button>
+        <Button 
+          className="bg-purple-700" 
+          disabled={isUploading || uploadThingLoading}
+        >
+          {isUploading || uploadThingLoading ? "Processing..." : "Transcribe"}
+        </Button>
       </div>
     </form>
   );

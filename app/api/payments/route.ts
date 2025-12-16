@@ -5,13 +5,23 @@ import {
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error('STRIPE_SECRET_KEY is required');
+}
+if (!process.env.STRIPE_WEBHOOK_SECRET) {
+  throw new Error('STRIPE_WEBHOOK_SECRET is required');
+}
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export async function POST(req: NextRequest) {
-  //webhook functionality
-  const payload = await req.text();
-
-  const sig = req.headers.get("stripe-signature");
+  try {
+    const payload = await req.text();
+    const sig = req.headers.get("stripe-signature");
+    
+    if (!sig) {
+      return NextResponse.json({ error: 'Missing signature' }, { status: 400 });
+    }
 
   let event;
 
@@ -31,7 +41,7 @@ export async function POST(req: NextRequest) {
             expand: ["line_items"],
           }
         );
-        console.log({ session });
+        console.log('Checkout session completed:', session.id);
 
         //connect to the db create or update user
         await handleCheckoutSessionCompleted({ session, stripe });
@@ -47,10 +57,10 @@ export async function POST(req: NextRequest) {
       default:
         console.log(`Unhandled event type ${event.type}`);
     }
-    return NextResponse.json({
-      status: "success",
-    });
+    return NextResponse.json({ status: "success" });
   } catch (err) {
-    return NextResponse.json({ status: "Failed", err });
+    console.error('Webhook error:', err);
+    return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 });
   }
+}
 }

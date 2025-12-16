@@ -4,19 +4,17 @@
 import getDbConnection from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import OpenAI from "openai";
+import { transcribeAudio, generateBlogContent } from "@/lib/transcription-service";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-async function retryWithExponentialBackoff(fn, retries = 3, delay = 1000) {
+async function retryWithExponentialBackoff(fn, retries = 5, delay = 2000) {
   for (let i = 0; i < retries; i++) {
     try {
       return await fn();
     } catch (error) {
       if (i === retries - 1) throw error;
-      await new Promise((resolve) => setTimeout(resolve, delay * 2 ** i));
+      const backoffDelay = delay * Math.pow(2, i);
+      console.log(`Retry ${i + 1}/${retries} after ${backoffDelay}ms`);
+      await new Promise((resolve) => setTimeout(resolve, backoffDelay));
     }
   }
 }
@@ -53,12 +51,11 @@ export async function transcribeUploadedFile(
   const clonedResponse = response.clone(); 
 
   try {
-    const transcriptions = await retryWithExponentialBackoff(() =>
-      openai.audio.transcriptions.create({
-        model: "whisper-1",
-        file: clonedResponse,
-      })
+    const transcriptionText = await retryWithExponentialBackoff(() =>
+      transcribeAudio(clonedResponse)
     );
+    
+    const transcriptions = { text: transcriptionText };
 
     console.log({ transcriptions });
     return {
@@ -123,40 +120,7 @@ async function generateBlogPost({
   transcriptions: string;
   userPosts: string;
 }) {
-  const completion = await openai.chat.completions.create({
-    messages: [
-      {
-        role: "system",
-        content:
-          "You are a skilled content writer that converts audio transcriptions into well-structured, engaging blog posts in Markdown format. Create a comprehensive blog post with a catchy title, introduction, main body with multiple sections, and a conclusion. Analyze the user's writing style from their previous posts and emulate their tone and style in the new post. Keep the tone casual and professional.",
-      },
-      {
-        role: "user",
-        content: `Here are some of my previous blog posts for reference:
-
-${userPosts}
-
-Please convert the following transcription into a well-structured blog post using Markdown formatting. Follow this structure:
-
-1. Start with a SEO friendly catchy title on the first line.
-2. Add two newlines after the title.
-3. Write an engaging introduction paragraph.
-4. Create multiple sections for the main content, using appropriate headings (##, ###).
-5. Include relevant subheadings within sections if needed.
-6. Use bullet points or numbered lists where appropriate.
-7. Add a conclusion paragraph at the end.
-8. Ensure the content is informative, well-organized, and easy to read.
-9. Emulate my writing style, tone, and any recurring patterns you notice from my previous posts.
-
-Here's the transcription to convert: ${transcriptions}`,
-      },
-    ],
-    model: "gpt-4o-mini",
-    temperature: 0.7,
-    max_tokens: 1000,
-  });
-
-  return completion.choices[0].message.content;
+  return await generateBlogContent(transcriptions, userPosts);
 }
 export async function generateBlogPostAction({
   transcriptions,
@@ -185,9 +149,16 @@ export async function generateBlogPostAction({
     const [title, ...contentParts] = blogPost?.split("\n\n") || [];
 
     //database connection
-
     if (blogPost) {
       postId = await saveBlogPost(userId, title, blogPost);
+      // Increment daily usage after successful blog post creation
+      const sql = await getDbConnection();
+      await sql`
+        INSERT INTO daily_usage (user_id, usage_date, usage_count)
+        VALUES (${userId}, CURRENT_DATE, 1)
+        ON CONFLICT (user_id, usage_date)
+        DO UPDATE SET usage_count = daily_usage.usage_count + 1
+      `;
     }
   }
 

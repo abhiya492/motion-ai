@@ -38,10 +38,10 @@ export default function RootLayout({
           className={cn(
             "min-h-screen bg-background font-sans antialiased",
             fontSans.variable,
-            typeof window !== "undefined" && window.document.body.classList.contains("vsc-initialized") ? "vsc-initialized" : ""
+""
           )}
         >
-          <Header></Header>
+          <Header />
           <main>{children}</main>
           <Toaster />
         </body>

@@ -30,11 +30,11 @@ export async function updateUser(
   return sql`UPDATE users SET user_id = ${userId} WHERE email = ${email}`;
 }
 
-export function getPlanType(priceId: string) {
-  if (priceId === null) return { id: "starter", name: "Starter" };
+export function getPlanType(priceId: string | null) {
+  if (!priceId) return { id: "starter", name: "Starter" };
 
-  const checkPlanType = plansMap.filter((plan) => plan.priceId === priceId);
-  return checkPlanType?.[0];
+  const checkPlanType = plansMap.find((plan) => plan.priceId === priceId);
+  return checkPlanType || { id: "starter", name: "Starter" };
 }
 
 export async function getDailyUsage(

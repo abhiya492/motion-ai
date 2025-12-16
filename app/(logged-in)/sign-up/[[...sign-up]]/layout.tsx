@@ -8,7 +8,7 @@ export default function SignUpLayout({ children }: { children: ReactNode }) {
       <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8">
         <div className="flex flex-col items-center justify-center gap-6 text-center">
           <Badge className="bg-gradient-to-r from-green-700 to-yellow-800 text-white px-4 py-1 text-lg font-semibold capitalize">
-            Hey There, Please Sign Up to get your blog eady in seconds using Video,Audio and others.
+            Hey there! Please sign up to get your blog ready in seconds using video, audio and more.
           </Badge>
           {children}
         </div>

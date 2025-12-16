@@ -22,46 +22,36 @@ export default async function Dashboard() {
   const email = clerkUser?.emailAddresses?.[0].emailAddress ?? "";
 
   const sql = await getDbConnection();
-
-  // Reset daily usage at the start of the Dashboard function
-  await resetDailyUsage();
-
-  //updatethe user id
+  
   let userId = null;
   let priceId = null;
-
-   
-  const hasUserCancelled = await hasCancelledSubscription(sql, email);
-  const user = await doesUserExist(sql, email);
+  
+  // Parallel database queries for better performance
+  const [hasUserCancelled, user] = await Promise.all([
+    hasCancelledSubscription(sql, email),
+    doesUserExist(sql, email)
+  ]);
 
   if (user) {
-    //update the user_id in users table
     userId = clerkUser?.id;
     if (userId) {
       await updateUser(sql, userId, email);
     }
-
     priceId = user[0].price_id;
   }
 
-  const { id: planTypeId = "starter", name: planTypeName } =
-    getPlanType(priceId);
-
+  const { id: planTypeId = "starter", name: planTypeName } = getPlanType(priceId);
   const isBasicPlan = planTypeId === "basic";
   const isProPlan = planTypeId === "pro";
 
-  // check number of posts per plan
-  const posts = await sql`SELECT * FROM posts WHERE user_id = ${userId}`;
+  // Parallel queries for posts and usage
+  const [posts, dailyUsage] = await Promise.all([
+    sql`SELECT id, title, created_at FROM posts WHERE user_id = ${userId} ORDER BY created_at DESC LIMIT 10`,
+    sql`SELECT usage_count FROM daily_usage WHERE user_id = ${userId} AND usage_date = CURRENT_DATE`
+  ]);
 
-  // Check daily usage from the daily_usage table
-  const dailyUsage = await sql`
-    SELECT usage_count FROM daily_usage 
-    WHERE user_id = ${userId} AND usage_date = CURRENT_DATE
-  `;
-
-  const isValidBasicPlan = isBasicPlan && dailyUsage[0]?.usage_count < 30;
-
-  console.log("isValidBasicPlan:", isValidBasicPlan);
+  const currentUsage = dailyUsage[0]?.usage_count || 0;
+  const canUpload = isProPlan || (isBasicPlan && currentUsage < 30) || (!isBasicPlan && !isProPlan && currentUsage < 3);
 
   return (
     <BgGradient>
@@ -79,18 +69,21 @@ export default async function Dashboard() {
             Upload your audio or video file and let our AI do the magic!
           </p>
 
-          {(isBasicPlan || isProPlan) && (
-            <p className="mt-2 text-lg leading-8 text-gray-700 max-w-2xl text-center">
-              You get{" "}
-              <span className="font-bold text-amber-600 bg-amber-100 px-2 py-1 rounded-md">
-                {isBasicPlan ? "30" : "Unlimited"} blog posts
-              </span>{" "}
-              as part of the{" "}
-              <span className="font-bold capitalize">{planTypeName}</span> Plan.
-            </p>
-          )}
+          <p className="mt-2 text-lg leading-8 text-gray-700 max-w-2xl text-center">
+            You get{" "}
+            <span className="font-bold text-amber-600 bg-amber-100 px-2 py-1 rounded-md">
+              {isProPlan ? "Unlimited" : isBasicPlan ? "30" : "3"} blog posts
+            </span>{" "}
+            as part of the{" "}
+            <span className="font-bold capitalize">{planTypeName}</span> Plan.
+            {!isProPlan && (
+              <span className="block mt-2 text-sm text-gray-600">
+                Used today: {currentUsage}
+              </span>
+            )}
+          </p>
 
-          {isValidBasicPlan ? (
+          {canUpload ? (
             <BgGradient>
               <UploadForm />
             </BgGradient>

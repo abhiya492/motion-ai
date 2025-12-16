@@ -52,23 +52,26 @@ export default function ContentEditor({
   const [content, setContent] = useState(posts[0].content);
   const [isChanged, setIsChanged] = useState(false);
 
-  const updatedPostActionWithId = updatePostAction.bind(null, {
-    postId: posts[0].id,
-    content,
-  });
+  const updatedPostActionWithId = async (formData: FormData) => {
+    return await updatePostAction({
+      postId: posts[0].id,
+      content,
+    });
+  };
 
   const [state, formAction] = useFormState<UploadState, FormData>(
     updatedPostActionWithId as unknown as UploadAction,
     initialState
   );
 
-  const handleContentChange = (value: string) => {
+  const handleContentChange = useCallback((value: string) => {
     setContent(value);
     setIsChanged(true);
-  };
+  }, []);
 
   const handleExport = useCallback(() => {
-    const filename = `${posts[0].title || "blog-post"}.md`;
+    const title = posts[0].title?.replace(/[^a-z0-9]/gi, '-').toLowerCase() || "blog-post";
+    const filename = `${title}.md`;
 
     const blob = new Blob([content], { type: "text/markdown;charset=utf-8" });
     const url = URL.createObjectURL(blob);

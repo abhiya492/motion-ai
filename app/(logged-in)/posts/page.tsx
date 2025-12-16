@@ -1,5 +1,5 @@
 import BgGradient from "@/components/common/bg-gradient";
-import getDbConnection, { incrementDailyUsage } from "@/lib/db";
+import getDbConnection from "@/lib/db";
 import { currentUser } from "@clerk/nextjs/server";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -15,8 +15,6 @@ export default async function Page() {
   const sql = await getDbConnection();
   const posts = await sql`SELECT * from posts where user_id = ${user.id}`;
 
-  // Call incrementDailyUsage when a new post is created
-  await incrementDailyUsage(user.id);
 
   return (
     <main className="container mx-auto w-full max-w-screen-xl px-2.5 lg:px-0 mb-12 mt-28">
